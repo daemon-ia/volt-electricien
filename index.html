@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="VOLT - Électricien & domotique premium. Installation, dépannage, rénovation et maison connectée. Le courant qui change tout." />
+  <title>VOLT - Électricien &amp; Domotique premium</title>
+
+  <!-- Fonts : Archivo Expanded (titres, technique/industriel) + Archivo (corps) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Expanded:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet (carte zone d'intervention) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ====== PRELOADER ====== -->
+  <div class="loader" id="loader">
+    <div class="loader__inner">
+      <div class="loader__brand">
+        <span class="loader__bolt"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg></span>
+        <span class="loader__word">VOLT</span>
+      </div>
+      <div class="loader__bar"><span class="loader__fill" id="loaderFill"></span></div>
+      <div class="loader__count"><span id="loaderCount">0</span><i>%</i></div>
+    </div>
+  </div>
+
+  <!-- ====== CUSTOM CURSOR ====== -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <!-- ====== GRAIN / NOISE OVERLAY ====== -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ====== PROGRESS (fil conducteur global) ====== -->
+  <div class="scroll-progress"><span id="scrollProgress"></span></div>
+
+  <!-- ====== NAV ====== -->
+  <header class="nav" id="nav">
+    <a href="#hero" class="nav__logo" data-magnetic>
+      <span class="nav__logo-mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg></span> VOLT
+    </a>
+    <nav class="nav__links">
+      <a href="#services" data-link>Services</a>
+      <a href="#work" data-link>Réalisations</a>
+      <a href="#process" data-link>Méthode</a>
+      <a href="#contact" data-link>Contact</a>
+    </nav>
+    <a href="#contact" class="btn btn--nav" data-magnetic>
+      <span>Devis gratuit</span>
+    </a>
+    <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+  </header>
+
+  <!-- ====== MENU MOBILE (overlay) ====== -->
+  <div class="menu" id="menu">
+    <nav class="menu__nav">
+      <a href="#services" data-menu-link><span>01</span> Services</a>
+      <a href="#work" data-menu-link><span>02</span> Réalisations</a>
+      <a href="#process" data-menu-link><span>03</span> Méthode</a>
+      <a href="#zone" data-menu-link><span>04</span> Zone d'intervention</a>
+      <a href="#contact" data-menu-link><span>05</span> Contact</a>
+    </nav>
+    <div class="menu__foot">
+      <a href="mailto:contact@volt-elec.fr">contact@volt-elec.fr</a>
+      <a href="tel:+33600000000">06 00 00 00 00</a>
+    </div>
+  </div>
+
+  <main id="smooth-content">
+
+    <!-- ====== HERO ====== -->
+    <section class="hero" id="hero">
+      <canvas class="hero__canvas" id="bolts"></canvas>
+      <div class="hero__glow"></div>
+
+      <div class="hero__inner">
+        <p class="hero__eyebrow" data-reveal>
+          <span class="dot"></span> Électricien &amp; domotique · Certifié Qualifelec
+        </p>
+
+        <h1 class="hero__title">
+          <span class="line"><span data-hero-line>Le courant</span></span>
+          <span class="line"><span data-hero-line>qui change <em>tout.</em></span></span>
+        </h1>
+
+        <p class="hero__sub" data-reveal>
+          On transforme votre installation électrique en une expérience fiable,
+          intelligente et spectaculaire. Du tableau au pilotage vocal.
+        </p>
+
+        <div class="hero__cta" data-reveal>
+          <a href="#contact" class="btn btn--primary" data-magnetic>
+            <span>Allumer le projet</span>
+            <i class="btn__arrow">→</i>
+          </a>
+          <a href="#work" class="btn btn--ghost" data-magnetic>
+            <span>Voir nos réalisations</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero__scroll" data-reveal>
+        <span>Scroll</span>
+        <div class="hero__scroll-line"><i></i></div>
+      </div>
+
+      <div class="hero__meta">
+        <div data-reveal><strong>15 ans</strong><span>d'expérience</span></div>
+        <div data-reveal><strong>24/7</strong><span>dépannage urgence</span></div>
+        <div data-reveal><strong>4.9/5</strong><span>720 avis clients</span></div>
+      </div>
+    </section>
+
+    <!-- ====== MARQUEE ====== -->
+    <section class="marquee" aria-hidden="true">
+      <div class="marquee__track" id="marquee">
+        <span>Installation</span><i></i>
+        <span>Domotique</span><i></i>
+        <span>Dépannage 24/7</span><i></i>
+        <span>Rénovation</span><i></i>
+        <span>Borne de recharge</span><i></i>
+        <span>Mise aux normes</span><i></i>
+        <span>Éclairage design</span><i></i>
+        <span>Installation</span><i></i>
+        <span>Domotique</span><i></i>
+        <span>Dépannage 24/7</span><i></i>
+        <span>Rénovation</span><i></i>
+        <span>Borne de recharge</span><i></i>
+        <span>Mise aux normes</span><i></i>
+        <span>Éclairage design</span><i></i>
+      </div>
+    </section>
+
+    <!-- ====== SERVICES ====== -->
+    <section class="services" id="services">
+      <div class="section-head">
+        <p class="section-tag" data-reveal><span class="dot"></span> Nos services</p>
+        <h2 class="section-title" data-split>Tout ce qui passe<br />par un câble.</h2>
+      </div>
+
+      <div class="services__grid">
+        <article class="card" data-card>
+          <span class="card__num">01</span>
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2"/>
+              <line x1="9" y1="6" x2="9" y2="10"/><line x1="15" y1="6" x2="15" y2="10"/>
+              <line x1="9" y1="14" x2="9" y2="18"/><line x1="15" y1="14" x2="15" y2="18"/>
+            </svg>
+          </div>
+          <h3>Installation &amp; rénovation</h3>
+          <p>Tableaux, réseaux, prises et tirage de câbles. Une installation propre, sécurisée et aux normes NF C 15-100.</p>
+          <span class="card__link">En savoir plus →</span>
+        </article>
+
+        <article class="card" data-card>
+          <span class="card__num">02</span>
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 10.5 12 3l9 7.5"/>
+              <path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/>
+              <path d="M9.3 14.7a4 4 0 0 1 5.4 0"/>
+              <line x1="12" y1="17.4" x2="12" y2="17.41"/>
+            </svg>
+          </div>
+          <h3>Domotique &amp; maison connectée</h3>
+          <p>Pilotez lumière, chauffage, volets et sécurité depuis votre voix ou votre smartphone. La maison qui pense.</p>
+          <span class="card__link">En savoir plus →</span>
+        </article>
+
+        <article class="card" data-card>
+          <span class="card__num">03</span>
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>
+            </svg>
+          </div>
+          <h3>Dépannage 24/7</h3>
+          <p>Panne, court-circuit, coupure ? Une équipe d'urgence intervient jour et nuit, 7j/7, partout dans la région.</p>
+          <span class="card__link">En savoir plus →</span>
+        </article>
+
+        <article class="card" data-card>
+          <span class="card__num">04</span>
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="13" height="14" rx="2"/>
+              <path d="M10 8.5 8 12h2.5L8.5 15.5"/>
+              <line x1="19" y1="10" x2="19" y2="14"/>
+              <path d="M16 11h1.5a1.5 1.5 0 0 1 1.5 1.5"/>
+            </svg>
+          </div>
+          <h3>Borne de recharge VE</h3>
+          <p>Installation de bornes pour véhicules électriques, éligibles aux aides. Rechargez chez vous, en toute sérénité.</p>
+          <span class="card__link">En savoir plus →</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ====== STATS ====== -->
+    <section class="stats">
+      <div class="stats__grid">
+        <div class="stat" data-reveal>
+          <span class="stat__num" data-count="1200" data-suffix="+">0</span>
+          <span class="stat__label">Chantiers réalisés</span>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat__num" data-count="98" data-suffix="%">0</span>
+          <span class="stat__label">Clients satisfaits</span>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat__num" data-count="45" data-suffix="min">0</span>
+          <span class="stat__label">Délai d'intervention moyen</span>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat__num" data-count="15" data-suffix=" ans">0</span>
+          <span class="stat__label">D'expertise terrain</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== WORK / RÉALISATIONS ====== -->
+    <section class="work" id="work">
+      <div class="section-head">
+        <p class="section-tag" data-reveal><span class="dot"></span> Réalisations</p>
+        <h2 class="section-title" data-split>Le courant<br />sublimé.</h2>
+      </div>
+
+      <div class="work__list">
+        <article class="project" data-project>
+          <div class="project__media" style="--img:linear-gradient(180deg,rgba(6,6,8,.35),rgba(6,6,8,.55)),url('https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=1100&q=75')">
+            <div class="project__visual" data-parallax-img></div>
+          </div>
+          <div class="project__info">
+            <span class="project__index">01 - Villa connectée</span>
+            <h3 class="project__title">Maison intelligente · Rennes</h3>
+            <p>Domotique complète : éclairage scénarisé, volets, sécurité et pilotage vocal sur 240 m².</p>
+            <ul class="project__tags"><li>Domotique</li><li>Éclairage</li><li>KNX</li></ul>
+          </div>
+        </article>
+
+        <article class="project" data-project>
+          <div class="project__media" style="--img:linear-gradient(180deg,rgba(6,6,8,.35),rgba(6,6,8,.55)),url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1100&q=75')">
+            <div class="project__visual" data-parallax-img></div>
+          </div>
+          <div class="project__info">
+            <span class="project__index">02 - Tertiaire</span>
+            <h3 class="project__title">Bureaux &amp; coworking</h3>
+            <p>Réfection totale du réseau, éclairage LED pilotable et tableau intelligent pour 1 200 m² de bureaux.</p>
+            <ul class="project__tags"><li>Installation</li><li>LED</li><li>Mise aux normes</li></ul>
+          </div>
+        </article>
+
+        <article class="project" data-project>
+          <div class="project__media" style="--img:linear-gradient(180deg,rgba(6,6,8,.35),rgba(6,6,8,.55)),url('https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=1100&q=75')">
+            <div class="project__visual" data-parallax-img></div>
+          </div>
+          <div class="project__info">
+            <span class="project__index">03 - Mobilité</span>
+            <h3 class="project__title">Parc de bornes VE</h3>
+            <p>12 bornes de recharge installées pour une copropriété, avec gestion intelligente de la charge.</p>
+            <ul class="project__tags"><li>Borne VE</li><li>Smart charging</li><li>Copropriété</li></ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ====== PROCESS / FIL CONDUCTEUR ====== -->
+    <section class="process" id="process">
+      <div class="section-head">
+        <p class="section-tag" data-reveal><span class="dot"></span> Notre méthode</p>
+        <h2 class="section-title" data-split>Un fil conducteur,<br />du premier contact à la lumière.</h2>
+      </div>
+
+      <div class="process__wrap">
+        <svg class="process__thread" id="thread" viewBox="0 0 200 1000" preserveAspectRatio="none" aria-hidden="true">
+          <path id="threadPath" d="M100,0 C100,120 30,180 30,300 C30,420 170,480 170,600 C170,720 100,780 100,1000" fill="none" stroke="url(#tg)" stroke-width="2" />
+          <defs>
+            <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffe600" />
+              <stop offset="1" stop-color="#19e3ff" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <ol class="process__steps">
+          <li class="step" data-step data-reveal>
+            <span class="step__n">01</span>
+            <h3>Échange &amp; diagnostic</h3>
+            <p>On écoute votre besoin et on analyse l'existant. Gratuit, sans engagement.</p>
+          </li>
+          <li class="step" data-step data-reveal>
+            <span class="step__n">02</span>
+            <h3>Devis transparent</h3>
+            <p>Un chiffrage clair, détaillé, sans surprise. Vous savez exactement ce que vous payez.</p>
+          </li>
+          <li class="step" data-step data-reveal>
+            <span class="step__n">03</span>
+            <h3>Réalisation soignée</h3>
+            <p>Une équipe ponctuelle, propre et certifiée. On respecte vos lieux comme les nôtres.</p>
+          </li>
+          <li class="step" data-step data-reveal>
+            <span class="step__n">04</span>
+            <h3>Lumière &amp; garantie</h3>
+            <p>Mise en service, formation et garantie. On reste joignables, toujours.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ====== TÉMOIGNAGES ====== -->
+    <section class="reviews" id="reviews">
+      <div class="section-head">
+        <p class="section-tag" data-reveal><span class="dot"></span> Ils nous font confiance</p>
+        <h2 class="section-title" data-split>Des clients<br />sous tension positive.</h2>
+      </div>
+
+      <div class="reviews__grid">
+        <figure class="review" data-reveal>
+          <div class="review__stars">★★★★★</div>
+          <blockquote>« Intervention ultra rapide pour une panne en pleine nuit. Pro, propre et rassurant. Je recommande les yeux fermés. »</blockquote>
+          <figcaption><span class="review__avatar" style="--c:#ffe600">CL</span><div><strong>Camille L.</strong><span>Rennes</span></div></figcaption>
+        </figure>
+
+        <figure class="review" data-reveal>
+          <div class="review__stars">★★★★★</div>
+          <blockquote>« Toute la domotique de la maison gérée à la voix. Le rendu est bluffant et tout fonctionne au doigt et à l'œil. »</blockquote>
+          <figcaption><span class="review__avatar" style="--c:#19e3ff">MR</span><div><strong>Marc R.</strong><span>Brest</span></div></figcaption>
+        </figure>
+
+        <figure class="review" data-reveal>
+          <div class="review__stars">★★★★★</div>
+          <blockquote>« Devis clair, délais respectés, finitions impeccables. Enfin un artisan qui communique vraiment. »</blockquote>
+          <figcaption><span class="review__avatar" style="--c:#ff7a59">SB</span><div><strong>Sophie B.</strong><span>Quimper</span></div></figcaption>
+        </figure>
+
+        <figure class="review" data-reveal>
+          <div class="review__stars">★★★★★</div>
+          <blockquote>« Installation de deux bornes de recharge pour la copro. Accompagnement au top, du devis aux aides. »</blockquote>
+          <figcaption><span class="review__avatar" style="--c:#9b8cff">TF</span><div><strong>Thomas F.</strong><span>Vannes</span></div></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ====== ZONE D'INTERVENTION (Leaflet) ====== -->
+    <section class="zone" id="zone">
+      <div class="zone__grid">
+        <div class="zone__text">
+          <p class="section-tag" data-reveal><span class="dot"></span> Zone d'intervention</p>
+          <h2 class="section-title" data-split>Toute la Bretagne.</h2>
+          <p class="zone__desc" data-reveal>Basés à Rennes, on rayonne sur les quatre départements bretons et au-delà. Une urgence&nbsp;? On est rarement à plus de 45 minutes de chez vous.</p>
+          <ul class="zone__cities" data-reveal>
+            <li>Rennes</li><li>Brest</li><li>Quimper</li>
+            <li>Vannes</li><li>Lorient</li><li>Saint-Malo</li>
+          </ul>
+          <a href="#contact" class="btn btn--ghost" data-magnetic><span>Vérifier ma commune</span></a>
+        </div>
+        <div class="zone__map-wrap" data-reveal>
+          <div id="map" class="zone__map"></div>
+          <div class="zone__map-badge"><span class="dot"></span> 6 équipes en intervention</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== FAQ ====== -->
+    <section class="faq" id="faq">
+      <div class="faq__grid">
+        <div class="faq__head">
+          <p class="section-tag" data-reveal><span class="dot"></span> Questions fréquentes</p>
+          <h2 class="section-title" data-split>On répond<br />à tout.</h2>
+          <p class="faq__sub" data-reveal>Une autre question&nbsp;? Écrivez-nous, on répond vite et sans jargon.</p>
+        </div>
+
+        <div class="faq__list">
+          <details class="faq__item" data-reveal>
+            <summary>Intervenez-vous en urgence le week-end ?</summary>
+            <div class="faq__body"><p>Oui, notre service de dépannage est disponible 24h/24 et 7j/7, week-ends et jours fériés inclus. Un électricien vous rappelle en quelques minutes.</p></div>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary>Le devis est-il vraiment gratuit ?</summary>
+            <div class="faq__body"><p>Totalement. On se déplace, on analyse votre besoin et on vous remet un chiffrage détaillé, sans aucun engagement de votre part.</p></div>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary>Êtes-vous certifiés et assurés ?</summary>
+            <div class="faq__body"><p>Oui : certification Qualifelec, label RGE et assurance décennale. Toutes nos installations respectent la norme NF C 15-100.</p></div>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary>Puis-je bénéficier d'aides pour une borne de recharge ?</summary>
+            <div class="faq__body"><p>Absolument. Le programme ADVENIR et le crédit d'impôt peuvent couvrir une partie de l'installation. On vous accompagne dans toutes les démarches.</p></div>
+          </details>
+          <details class="faq__item" data-reveal>
+            <summary>Combien de temps dure une mise aux normes ?</summary>
+            <div class="faq__body"><p>Cela dépend de la taille du logement, mais comptez généralement de 1 à 3 jours pour un appartement, avec une coupure minimale.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== CTA / INTERRUPTEUR ====== -->
+    <section class="cta" id="contact">
+      <div class="cta__glow"></div>
+      <div class="cta__inner">
+        <p class="section-tag" data-reveal><span class="dot"></span> On allume ?</p>
+        <h2 class="cta__title" data-split>Prêt à donner<br />du courant à votre projet ?</h2>
+        <p class="cta__sub" data-reveal>Actionnez l'interrupteur. On vous rappelle sous 24h pour un devis gratuit.</p>
+
+        <div class="switch" id="switch" role="button" tabindex="0" aria-label="Activer le contact">
+          <div class="switch__track">
+            <div class="switch__knob"></div>
+          </div>
+          <span class="switch__label switch__label--off">OFF</span>
+          <span class="switch__label switch__label--on">ON</span>
+        </div>
+
+        <div class="cta__actions">
+          <a href="mailto:contact@volt-elec.fr" class="btn btn--primary" data-magnetic>
+            <span>contact@volt-elec.fr</span><i class="btn__arrow">→</i>
+          </a>
+          <a href="tel:+33600000000" class="btn btn--ghost" data-magnetic>
+            <span>06 00 00 00 00</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== FOOTER ====== -->
+    <footer class="footer">
+      <div class="footer__cols">
+        <div>
+          <h4>VOLT Électricité</h4>
+          <p>Électricien &amp; domotique premium.<br />Certifié Qualifelec · RGE.</p>
+        </div>
+        <div>
+          <h4>Navigation</h4>
+          <a href="#services" data-link>Services</a>
+          <a href="#work" data-link>Réalisations</a>
+          <a href="#process" data-link>Méthode</a>
+          <a href="#contact" data-link>Contact</a>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <a href="mailto:contact@volt-elec.fr">contact@volt-elec.fr</a>
+          <a href="tel:+33600000000">06 00 00 00 00</a>
+          <p>Rennes · Brest · Bretagne</p>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© 2026 VOLT - Démo design par Emilie Roupsard</span>
+        <span>Conçu avec <svg viewBox="0 0 24 24" fill="#ffe600" style="width:.9em;height:.9em;vertical-align:-2px;filter:drop-shadow(0 0 6px var(--volt))"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg> GSAP &amp; Leaflet</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ====== LIBS ====== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
