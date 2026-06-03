@@ -363,7 +363,7 @@
     // transition CSS coupée le temps de l'anim, sinon elle bouffe le transform
     cards.forEach((c) => { c.style.transition = "none"; });
 
-    gsap.set(cards, { opacity: 0, y: 100, rotateX: -45, scale: 0.88, transformOrigin: "50% 100%" });
+    gsap.set(cards, { opacity: 0, y: 50, rotateX: -20, scale: 0.94, transformOrigin: "50% 100%" });
     const icons = cards.map((c) => c.querySelector(".card__icon")).filter(Boolean);
     gsap.set(icons, { scale: 0, rotate: -25, opacity: 0 });
 
@@ -585,5 +585,10 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     runLoader(boot);
+  });
+
+  // Refresh ScrollTrigger après le chargement complet (fonts, images)
+  window.addEventListener("load", () => {
+    if (hasGSAP) ScrollTrigger.refresh();
   });
 })();
