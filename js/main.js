@@ -67,24 +67,37 @@
   // CUSTOM CURSOR (magnetic + hover grow)
   function initCursor() {
     if (!isFinePointer) return;
-    const cursor = document.getElementById("cursor");
     const dot = document.getElementById("cursorDot");
-    let cx = innerWidth / 2, cy = innerHeight / 2, dx = cx, dy = cy;
+    let dx = innerWidth / 2, dy = innerHeight / 2;
+
+    // Étincelles électriques (crackle) : jaillissent quand la souris bouge
+    const sparkColors = ["var(--spark)", "var(--volt)", "var(--spark-soft)"];
+    let lastSpark = 0;
+    function spawnSparks(x, y, n) {
+      for (let i = 0; i < n; i++) {
+        const s = document.createElement("span");
+        s.className = "spark";
+        s.style.left = (x + (Math.random() - 0.5) * 10) + "px";
+        s.style.top = (y + (Math.random() - 0.5) * 10) + "px";
+        s.style.background = sparkColors[(Math.random() * sparkColors.length) | 0];
+        s.style.setProperty("--rot", (Math.random() * 360) + "deg");
+        s.style.setProperty("--dist", (8 + Math.random() * 18) + "px");
+        s.style.setProperty("--dur", (0.35 + Math.random() * 0.35) + "s");
+        document.body.appendChild(s);
+        s.addEventListener("animationend", () => s.remove());
+      }
+    }
 
     window.addEventListener("mousemove", (e) => {
       dx = e.clientX; dy = e.clientY;
       dot.style.transform = `translate(${dx}px, ${dy}px)`;
-    });
-    const render = () => {
-      cx += (dx - cx) * 0.18; cy += (dy - cy) * 0.18;
-      cursor.style.transform = `translate(${cx}px, ${cy}px)`;
-      requestAnimationFrame(render);
-    };
-    render();
-
-    document.querySelectorAll('a, button, [data-magnetic], .switch, .card').forEach((el) => {
-      el.addEventListener("mouseenter", () => cursor.classList.add("is-hover"));
-      el.addEventListener("mouseleave", () => cursor.classList.remove("is-hover"));
+      if (prefersReduced) return;
+      const now = performance.now();
+      const speed = Math.hypot(e.movementX, e.movementY);
+      if (speed > 6 && now - lastSpark > 28) {
+        lastSpark = now;
+        spawnSparks(dx, dy, speed > 30 ? 2 : 1);
+      }
     });
   }
 
@@ -300,9 +313,32 @@
       });
     }
 
-    // Marquee : déplacement au scroll
+    // Marquee kinétique : boucle continue + réactif à la vitesse de scroll (boost + skew)
     const marquee = document.getElementById("marquee");
-    if (marquee) {
+    if (marquee && !prefersReduced) {
+      const base = 1; // vitesse de croisière (timeScale)
+      const loop = gsap.to(marquee, { xPercent: -50, ease: "none", duration: 18, repeat: -1 });
+      loop.timeScale(base);
+
+      let dir = 1, vel = 0, skew = 0;
+      ScrollTrigger.create({
+        trigger: ".marquee", start: "top bottom", end: "bottom top",
+        onUpdate: (self) => { vel = self.getVelocity(); }
+      });
+
+      gsap.ticker.add(() => {
+        if (Math.abs(vel) > 1) dir = vel < 0 ? -1 : 1;        // le sens suit le scroll
+        // boost proportionnel à la vitesse de scroll, retour progressif au régime de croisière
+        const target = dir * (base + gsap.utils.clamp(0, 5, Math.abs(vel) / 200));
+        loop.timeScale(loop.timeScale() + (target - loop.timeScale()) * 0.08);
+        // skew kinétique borné, revient à 0 quand le scroll se calme
+        const skewTarget = gsap.utils.clamp(-14, 14, vel / 180);
+        skew += (skewTarget - skew) * 0.1;
+        gsap.set(marquee, { skewX: skew });
+        vel *= 0.9; // amortissement de la vitesse mémorisée
+      });
+    } else if (marquee) {
+      // reduced-motion : simple déplacement lié au scroll, pas de boucle auto
       gsap.to(marquee, {
         xPercent: -50, ease: "none",
         scrollTrigger: { trigger: ".marquee", start: "top bottom", end: "bottom top", scrub: 1 }
