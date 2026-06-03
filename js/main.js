@@ -68,7 +68,9 @@
   function initCursor() {
     if (!isFinePointer) return;
     const dot = document.getElementById("cursorDot");
+    if (!dot) return;
     let dx = innerWidth / 2, dy = innerHeight / 2;
+    dot.style.transform = `translate(${dx}px, ${dy}px)`;
 
     // Étincelles électriques (crackle) : jaillissent quand la souris bouge
     const sparkColors = ["var(--spark)", "var(--volt)", "var(--spark-soft)"];
