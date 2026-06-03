@@ -602,3 +602,79 @@ body.menu-open .nav.is-hidden { transform: none; }
   * { animation: none !important; transition: none !important; }
   [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* ============================================================
+   RESPONSIVE — Tablette & Mobile
+   ============================================================ */
+
+/* --- Tablette (≤ 860px) — complète les breakpoints existants --- */
+@media (max-width: 860px) {
+  /* Hero */
+  .hero { padding-top: 5.5rem; padding-bottom: 2rem; }
+  .hero__meta { margin-top: 2.5rem; gap: 1.5rem 2.5rem; }
+  .hero__meta strong { font-size: 1.4rem; }
+
+  /* Work */
+  .work__list { gap: 3rem; }
+
+  /* Footer : 3 cols → 2 cols sur tablette */
+  .footer__cols { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* --- Mobile (≤ 600px) --- */
+@media (max-width: 600px) {
+  /* Hero */
+  .hero { padding-top: 5rem; }
+  .hero__eyebrow { font-size: 0.8rem; padding: 0.45rem 0.85rem; }
+  .hero__sub { font-size: 0.98rem; margin-bottom: 1.75rem; }
+  .hero__cta { flex-direction: column; align-items: stretch; }
+  .hero__cta .btn { width: 100%; justify-content: center; }
+  .hero__scroll { display: none; }
+  .hero__meta { margin-top: 1.75rem; gap: 1rem 2rem; }
+  .hero__meta strong { font-size: 1.25rem; }
+  .hero__meta span { font-size: 0.78rem; }
+
+  /* Services */
+  .card { padding: 2rem 1.75rem; }
+  .card h3 { font-size: 1.35rem; }
+
+  /* Work */
+  .work__list { gap: 2rem; }
+  .project__info p { max-width: 100%; }
+
+  /* Stats */
+  .stats { padding: 3rem var(--pad); }
+
+  /* Process */
+  .step { padding: 1.75rem 2rem; }
+
+  /* Reviews */
+  .review { padding: 1.8rem 2rem; }
+  .review blockquote { font-size: 1.05rem; }
+
+  /* Zone */
+  .zone__map { height: 300px; }
+  .zone { padding: clamp(4rem, 8vh, 7rem) var(--pad); }
+
+  /* FAQ */
+  .faq { padding: clamp(4rem, 8vh, 7rem) var(--pad); }
+  .faq__body p { max-width: 100%; }
+
+  /* CTA */
+  .cta { padding: clamp(4rem, 10vh, 7rem) var(--pad); }
+
+  /* Footer : 2 cols → 1 col sur mobile */
+  .footer__cols { grid-template-columns: 1fr; }
+  .footer__bottom { flex-direction: column; text-align: center; gap: 0.4rem; }
+}
+
+/* --- Petit mobile (≤ 390px) --- */
+@media (max-width: 390px) {
+  .hero__meta { gap: 0.75rem 1.5rem; }
+  .hero__meta strong { font-size: 1.15rem; }
+  .card { padding: 1.6rem 1.5rem; }
+  .card h3 { font-size: 1.25rem; }
+  .stat__num { font-size: clamp(2rem, 10vw, 2.6rem); }
+  .review { padding: 1.5rem; }
+  .step { padding: 1.5rem 1.6rem; }
+}
