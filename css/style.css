@@ -31,6 +31,13 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--volt); border-radius: 2px; box-shadow: 0 0 8px var(--volt); }
+::-webkit-scrollbar-thumb:hover { background: var(--volt-soft); }
+* { scrollbar-width: thin; scrollbar-color: var(--volt) var(--bg); }
+
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
