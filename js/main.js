@@ -431,6 +431,11 @@
   function initNav() {
     const nav = document.getElementById("nav");
     const progress = document.getElementById("scrollProgress");
+    const toTop = document.getElementById("toTop");
+    if (toTop) toTop.addEventListener("click", () => {
+      if (lenis) lenis.scrollTo(0, { duration: 1.4 });
+      else window.scrollTo({ top: 0, behavior: "smooth" });
+    });
     let lastY = 0;
     const onScroll = () => {
       const y = window.scrollY;
@@ -440,6 +445,7 @@
       lastY = y;
       const max = document.documentElement.scrollHeight - innerHeight;
       if (progress) progress.style.width = (y / max) * 100 + "%";
+      if (toTop) toTop.classList.toggle("is-visible", y > 600);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
