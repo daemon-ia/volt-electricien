@@ -1,5 +1,6 @@
 /* VOLT - main.js
-   Smooth scroll (Lenis) + GSAP/ScrollTrigger, canvas hero, curseur, carte. */
+   La salle des machines : scroll tt doux (Lenis), anims GSAP, éclairs du hero, curseur, carte.
+   Merci de couper le disjoncteur avant de toucher aux fils. */
 
 (() => {
   "use strict";
@@ -10,7 +11,7 @@
 
   if (hasGSAP) gsap.registerPlugin(ScrollTrigger);
 
-  // PRELOADER
+  // PRELOADER - le compteur qui fait genre que ça charge (bon, ça charge un peu qd même)
   const loader = document.getElementById("loader");
   const fill = document.getElementById("loaderFill");
   const count = document.getElementById("loaderCount");
@@ -22,7 +23,7 @@
         onComplete: () => { loader.style.display = "none"; done(); }
       });
     } else {
-      // pas de GSAP : on masque le rideau en CSS
+      // pas de GSAP ? pas de panique, on lève le rideau à l'ancienne en CSS
       loader.style.transition = "transform .7s ease, opacity .7s ease";
       loader.style.transform = "translateY(-100%)";
       setTimeout(() => { loader.style.display = "none"; done(); }, 700);
@@ -43,16 +44,22 @@
     tick();
   }
 
-  // LENIS SMOOTH SCROLL
+  // LENIS - le scroll en beurre doux
   let lenis = null;
   function initLenis() {
     if (prefersReduced || typeof Lenis === "undefined") return;
     lenis = new Lenis({ duration: 1.15, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
-    lenis.on("scroll", () => { if (hasGSAP) ScrollTrigger.update(); });
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
-    gsap.ticker.lagSmoothing(0);
+    if (hasGSAP) {
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+    } else {
+      // GSAP aux abonnés absents : Lenis tourne sur son propre moteur
+      const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+      requestAnimationFrame(raf);
+    }
 
-    // liens d'ancre (le menu mobile gère les siens à part)
+    // liens d'ancre (#truc). Le menu mobile gère les siens dans son coin, chacun son job
     document.querySelectorAll('a[href^="#"]:not([data-menu-link])').forEach((a) => {
       a.addEventListener("click", (e) => {
         const id = a.getAttribute("href");
@@ -64,7 +71,7 @@
     });
   }
 
-  // CUSTOM CURSOR (magnetic + hover grow)
+  // CURSEUR PERSO - un petit point jaune qui vous suit partout, mais gentiment
   function initCursor() {
     if (!isFinePointer) return;
     const dot = document.getElementById("cursorDot");
@@ -72,7 +79,7 @@
     let dx = innerWidth / 2, dy = innerHeight / 2;
     dot.style.transform = `translate(${dx}px, ${dy}px)`;
 
-    // Étincelles électriques (crackle) : jaillissent quand la souris bouge
+    // étincelles qd la souris bouge vite. Aucun risque d'électrocution, promis
     const sparkColors = ["var(--spark)", "var(--volt)", "var(--spark-soft)"];
     let lastSpark = 0;
     function spawnSparks(x, y, n) {
@@ -103,7 +110,7 @@
     });
   }
 
-  // MAGNETIC BUTTONS
+  // BOUTONS MAGNÉTIQUES - ils vous attirent, c'est physique (enfin, c'est du JS)
   function initMagnetic() {
     if (!isFinePointer || !hasGSAP) return;
     document.querySelectorAll("[data-magnetic]").forEach((el) => {
@@ -119,7 +126,7 @@
     });
   }
 
-  // CARD SPOTLIGHT (suit la souris)
+  // SPOT SUR LES CARTES - la lumière suit la souris, façon projo de concert
   function initCardSpotlight() {
     document.querySelectorAll("[data-card]").forEach((card) => {
       card.addEventListener("mousemove", (e) => {
@@ -130,10 +137,12 @@
     });
   }
 
-  // HERO - CANVAS ÉLECTRIQUE (arcs qui suivent la souris)
+  // HERO - le canvas qui balance des éclairs vers la souris. Le clou du spectacle
   function initBolts() {
     if (prefersReduced) return;
     const canvas = document.getElementById("bolts");
+    const hero = document.getElementById("hero");
+    if (!canvas || !hero) return;
     const ctx = canvas.getContext("2d");
     let w, h, dpr;
     const mouse = { x: -999, y: -999, active: false };
@@ -153,14 +162,17 @@
       nodes.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25 });
     }
 
-    const hero = document.getElementById("hero");
+    // hero hors écran = on met l'anim en pause, la batterie dit merci
+    let visible = true;
+    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(hero);
+
     hero.addEventListener("mousemove", (e) => {
       const r = hero.getBoundingClientRect();
       mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.active = true;
     });
     hero.addEventListener("mouseleave", () => { mouse.active = false; });
 
-    // Dessine un éclair fractal entre deux points
+    // éclair fractal entre 2 pts : on coupe en 2, on décale un peu, on recommence. Validé par Zeus
     function lightning(x1, y1, x2, y2, displace, alpha) {
       if (displace < 4) {
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
@@ -177,15 +189,18 @@
     }
 
     function frame() {
+      requestAnimationFrame(frame);
+      if (!visible) return;
       ctx.clearRect(0, 0, w, h);
 
       for (const n of nodes) {
         n.x += n.vx; n.y += n.vy;
-        if (n.x < 0 || n.x > w) n.vx *= -1;
-        if (n.y < 0 || n.y > h) n.vy *= -1;
+        // on rebondit ET on recadre, sinon après un resize les points restent coincés dehors à trembler
+        if (n.x < 0 || n.x > w) { n.vx *= -1; n.x = Math.max(0, Math.min(w, n.x)); }
+        if (n.y < 0 || n.y > h) { n.vy *= -1; n.y = Math.max(0, Math.min(h, n.y)); }
       }
 
-      // liens entre noeuds proches
+      // on relie les noeuds voisins (un réseau élec., version déco)
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
@@ -196,14 +211,14 @@
             ctx.lineWidth = 0.6; ctx.stroke();
           }
         }
-        // point
+        // le petit point lumineux
         ctx.beginPath();
         ctx.arc(nodes[i].x, nodes[i].y, 1.2, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255, 230, 0, 0.5)";
         ctx.fill();
       }
 
-      // arcs électriques vers la souris
+      // arcs vers la souris, 5 max sinon ça tourne à l'orage
       if (mouse.active) {
         const near = nodes
           .map((n) => ({ n, d: Math.hypot(n.x - mouse.x, n.y - mouse.y) }))
@@ -213,22 +228,20 @@
         for (const o of near) {
           lightning(mouse.x, mouse.y, o.n.x, o.n.y, 26, 0.55 * (1 - o.d / 240));
         }
-        // halo souris
+        // halo autour de la souris, pr le côté magique
         const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 60);
         g.addColorStop(0, "rgba(255,230,0,0.18)"); g.addColorStop(1, "rgba(255,230,0,0)");
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 60, 0, Math.PI * 2); ctx.fill();
       }
-
-      requestAnimationFrame(frame);
     }
     frame();
   }
 
-  // SPLIT TEXT (titres en caractères animables)
+  // SPLIT TEXT - on découpe les titres lettre par lettre, façon puzzle
   function splitText(el) {
     const text = el.innerHTML;
-    const parts = text.split(/<br\s*\/?>/i); // une ligne par <br>
+    const parts = text.split(/<br\s*\/?>/i); // 1 ligne par <br>, logique
     el.innerHTML = "";
     parts.forEach((part) => {
       const wrap = document.createElement("span");
@@ -238,7 +251,7 @@
       wrap.style.paddingBottom = "0.16em";
       wrap.style.marginBottom = "-0.16em";
 
-      // mot par mot pour éviter les coupures au milieu d'un mot
+      // on groupe par mot, sinon le navigateur coupe en plein milieu et c'est moche
       const words = part.trim().split(/\s+/);
       words.forEach((word, wi) => {
         const wordSpan = document.createElement("span");
@@ -258,24 +271,24 @@
     return el.querySelectorAll(".split-char");
   }
 
-  // ANIMATIONS SCROLL (GSAP)
+  // ANIMS AU SCROLL - tout ce qui bouge qd on descend
   function initScrollAnimations() {
     if (!hasGSAP) {
-      // fallback : tout visible
+      // GSAP absent : on affiche tout direct, sans chichis
       document.querySelectorAll("[data-reveal]").forEach((el) => { el.style.opacity = 1; el.style.transform = "none"; });
       return;
     }
 
-    // Hero : titre en lignes
+    // Hero : le titre monte ligne par ligne, effet rideau
     gsap.set("[data-hero-line]", { yPercent: 110 });
     const heroTl = gsap.timeline({ delay: 0.15 });
     heroTl.to("[data-hero-line]", {
             yPercent: 0, duration: 1.1, ease: "power4.out", stagger: 0.12,
             onComplete: () => { document.querySelectorAll(".hero__title .line").forEach((l) => { l.style.overflow = "visible"; }); }
           })
-          .to("[data-reveal]", { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", stagger: 0.08 }, "-=0.7");
+          .to(".hero [data-reveal]", { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", stagger: 0.08 }, "-=0.7");
 
-    // Reveals génériques (hors hero)
+    // apparitions au scroll pr le reste de la page (le hero a déjà eu son moment de gloire)
     gsap.utils.toArray("[data-reveal]").forEach((el) => {
       if (el.closest(".hero")) return;
       gsap.to(el, {
@@ -284,19 +297,19 @@
       });
     });
 
-    // Titres splittés
+    // titres découpés : chaque lettre fait son entrée
     gsap.utils.toArray("[data-split]").forEach((el) => {
       const chars = splitText(el);
       gsap.set(chars, { yPercent: 110 });
       gsap.to(chars, {
         yPercent: 0, duration: 1, ease: "power4.out", stagger: 0.02,
         scrollTrigger: { trigger: el, start: "top 85%" },
-        // overflow visible après coup, sinon le glow du CTA est rogné
+        // overflow visible à la fin, sinon le glow du CTA se fait rogner (et il aime pas ça)
         onComplete: () => { el.querySelectorAll(".split-line").forEach((l) => { l.style.overflow = "visible"; }); }
       });
     });
 
-    // Parallaxe images projets
+    // parallaxe des photos projets, petit effet de profondeur gratos
     gsap.utils.toArray("[data-parallax-img]").forEach((img) => {
       gsap.fromTo(img, { yPercent: -12 }, {
         yPercent: 12, ease: "none",
@@ -304,7 +317,7 @@
       });
     });
 
-    // Fil conducteur : tracé du SVG au scroll
+    // le fil conducteur se dessine au scroll. Électricien oblige
     const path = document.getElementById("threadPath");
     if (path) {
       const len = path.getTotalLength();
@@ -315,10 +328,10 @@
       });
     }
 
-    // Marquee kinétique : boucle continue + réactif à la vitesse de scroll (boost + skew)
+    // bandeau défilant : tourne en boucle, accélère et penche qd on scrolle vite. Il a du caractère
     const marquee = document.getElementById("marquee");
     if (marquee && !prefersReduced) {
-      const base = 1; // vitesse de croisière (timeScale)
+      const base = 1; // vitesse de croisière, pépère
       const loop = gsap.to(marquee, { xPercent: -50, ease: "none", duration: 18, repeat: -1 });
       loop.timeScale(base);
 
@@ -329,18 +342,18 @@
       });
 
       gsap.ticker.add(() => {
-        if (Math.abs(vel) > 1) dir = vel < 0 ? -1 : 1;        // le sens suit le scroll
-        // boost proportionnel à la vitesse de scroll, retour progressif au régime de croisière
+        if (Math.abs(vel) > 1) dir = vel < 0 ? -1 : 1;        // il suit le sens du scroll, docile
+        // + on scrolle vite, + ça file. Puis ça se calme tout seul
         const target = dir * (base + gsap.utils.clamp(0, 5, Math.abs(vel) / 200));
         loop.timeScale(loop.timeScale() + (target - loop.timeScale()) * 0.08);
-        // skew kinétique borné, revient à 0 quand le scroll se calme
+        // petit penché dynamique, plafonné pr pas finir en italique illisible
         const skewTarget = gsap.utils.clamp(-14, 14, vel / 180);
         skew += (skewTarget - skew) * 0.1;
         gsap.set(marquee, { skewX: skew });
-        vel *= 0.9; // amortissement de la vitesse mémorisée
+        vel *= 0.9; // on redescend en douceur
       });
     } else if (marquee) {
-      // reduced-motion : simple déplacement lié au scroll, pas de boucle auto
+      // reduced-motion : pas de boucle auto, ça bouge juste avec le scroll. Respect
       gsap.to(marquee, {
         xPercent: -50, ease: "none",
         scrollTrigger: { trigger: ".marquee", start: "top bottom", end: "bottom top", scrub: 1 }
@@ -349,7 +362,7 @@
 
   }
 
-  // SERVICE CARDS - entrée 3D "mise sous tension"
+  // CARTES SERVICES - entrée 3D façon "mise sous tension"
   function initServiceCards() {
     const cards = Array.prototype.slice.call(document.querySelectorAll(".services [data-card]"));
     if (!cards.length) return;
@@ -362,7 +375,7 @@
     const grid = document.querySelector(".services__grid");
     if (grid) grid.style.perspective = "1300px";
 
-    // transition CSS coupée le temps de l'anim, sinon elle bouffe le transform
+    // on coupe la transition CSS pdt l'anim, sinon elle se bagarre avec GSAP pr le transform
     cards.forEach((c) => { c.style.transition = "none"; });
 
     gsap.set(cards, { opacity: 0, y: 50, rotateX: -20, scale: 0.94, transformOrigin: "50% 100%" });
@@ -376,23 +389,23 @@
       onEnter: () => {
         const tl = gsap.timeline();
 
-        // montée + redressement 3D en cascade
+        // les cartes se lèvent une par une, comme un lundi matin
         tl.to(cards, {
           opacity: 1, y: 0, rotateX: 0, scale: 1,
           duration: 1.15, ease: "power4.out", stagger: 0.13,
           onComplete: () => {
             gsap.set(cards, { clearProps: "transform" });
-            cards.forEach((c) => { c.style.transition = ""; }); // on rend le hover au CSS
+            cards.forEach((c) => { c.style.transition = ""; }); // et on rend le hover au CSS, merci pour le prêt
           }
         });
 
-        // pop des icônes
+        // pop des icônes, boing
         tl.to(icons, {
           opacity: 1, scale: 1, rotate: 0,
           duration: 0.7, ease: "back.out(2.2)", stagger: 0.13
         }, 0.25);
 
-        // flash de glow par carte
+        // petit flash par carte : le courant passe
         cards.forEach((card, i) => {
           tl.fromTo(card,
             { boxShadow: "0 0 0px 0px rgba(255,230,0,0)" },
@@ -406,7 +419,7 @@
     });
   }
 
-  // COMPTEURS
+  // COMPTEURS - les chiffres qui défilent pr impressionner la galerie
   function initCounters() {
     document.querySelectorAll("[data-count]").forEach((el) => {
       const target = parseFloat(el.dataset.count);
@@ -427,11 +440,12 @@
     });
   }
 
-  // NAV (hide on scroll down, show on up + scrolled bg)
+  // NAV - se cache qd on descend, revient qd on remonte. Un brin timide
   function initNav() {
     const nav = document.getElementById("nav");
     const progress = document.getElementById("scrollProgress");
     const toTop = document.getElementById("toTop");
+    // bouton retour en haut : l'ascenseur express, sans attente
     if (toTop) toTop.addEventListener("click", () => {
       if (lenis) lenis.scrollTo(0, { duration: 1.4 });
       else window.scrollTo({ top: 0, behavior: "smooth" });
@@ -444,22 +458,23 @@
       else nav.classList.remove("is-hidden");
       lastY = y;
       const max = document.documentElement.scrollHeight - innerHeight;
-      if (progress) progress.style.width = (y / max) * 100 + "%";
+      if (progress && max > 0) progress.style.width = (y / max) * 100 + "%";
       if (toTop) toTop.classList.toggle("is-visible", y > 600);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   }
 
-  // SWITCH / INTERRUPTEUR
+  // L'INTERRUPTEUR - le seul du site qu'on peut actionner sans habilitation élec
   function initSwitch() {
     const sw = document.getElementById("switch");
     const cta = document.getElementById("contact");
-    if (!sw) return;
+    if (!sw || !cta) return;
     const toggle = () => {
       const on = sw.classList.toggle("is-on");
+      sw.setAttribute("aria-checked", on ? "true" : "false"); // pr les lecteurs d'écran
       cta.classList.toggle("is-on", on);
-      // le glow permanent est en CSS (.cta.is-on), ici juste un pic au clic
+      // le glow permanent est en CSS (.cta.is-on), ici c'est juste le coup de jus au clic
       if (on && hasGSAP && !prefersReduced) {
         gsap.fromTo(".cta__title",
           { textShadow: "0 0 70px rgba(255,230,0,0.9)" },
@@ -473,7 +488,7 @@
     sw.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
   }
 
-  // MENU MOBILE (burger)
+  // MENU MOBILE - le burger (sans frites, désolé)
   function initMenu() {
     const burger = document.getElementById("burger");
     const menu = document.getElementById("menu");
@@ -496,10 +511,10 @@
         if (target && lenis) { e.preventDefault(); setTimeout(() => lenis.scrollTo(target, { offset: -20, duration: 1.4 }), 350); }
       });
     });
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") setOpen(false); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && menu.classList.contains("is-open")) setOpen(false); });
   }
 
-  // FAQ - accordéon animé (height + exclusif)
+  // FAQ - accordéon animé, 1 seule question ouverte à la fois, chacun son tour
   function initFaq() {
     const items = document.querySelectorAll(".faq__item");
     items.forEach((item) => {
@@ -508,7 +523,7 @@
       summary.addEventListener("click", (e) => {
         e.preventDefault();
         const isOpen = item.hasAttribute("open");
-        // ferme les autres
+        // on ferme les autres, place au nouveau
         items.forEach((other) => {
           if (other !== item && other.hasAttribute("open")) {
             const ob = other.querySelector(".faq__body");
@@ -529,26 +544,26 @@
     });
   }
 
-  // CARTE LEAFLET (zone d'intervention, thème sombre)
+  // CARTE LEAFLET - la zone d'intervention, en mode dark évidemment
   function initMap() {
     const el = document.getElementById("map");
     if (!el || typeof L === "undefined") return;
 
-    const center = [48.2, -2.9]; // centre de la Bretagne
+    const center = [48.2, -2.9]; // centre de la Bretagne, à peu près (pas de jaloux entre départements)
     const map = L.map(el, { center, zoom: 8, scrollWheelZoom: false, zoomControl: true, attributionControl: true });
 
-    // Tuiles sombres (CARTO dark matter)
+    // fond de carte sombre (CARTO dark matter, on dirait un film de SF)
     L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
       attribution: '&copy; OpenStreetMap &copy; CARTO',
       maxZoom: 19, subdomains: "abcd"
     }).addTo(map);
 
-    // Zone de couverture (cercle néon)
+    // la zone couverte, en cercle néon
     L.circle(center, {
       radius: 130000, color: "#ffe600", weight: 1.5, fillColor: "#ffe600", fillOpacity: 0.08
     }).addTo(map);
 
-    // Villes desservies
+    // villes desservies (et les autres, on vient aussi hein)
     const cities = [
       { name: "Rennes", ll: [48.117, -1.677], main: true },
       { name: "Brest", ll: [48.390, -4.486] },
@@ -566,14 +581,14 @@
       L.marker(c.ll, { icon: dot }).addTo(map).bindPopup(`<strong>${c.name}</strong><br>Intervention rapide`);
     });
 
-    // Active le scroll-zoom seulement après un clic (évite de piéger le scroll)
+    // zoom molette seulement après un clic, sinon la carte vous kidnappe le scroll
     map.on("click", () => map.scrollWheelZoom.enable());
     map.on("mouseout", () => map.scrollWheelZoom.disable());
 
     setTimeout(() => { map.invalidateSize(); if (hasGSAP) ScrollTrigger.refresh(); }, 300);
   }
 
-  // BOOT
+  // BOOT - on branche tout et on croise les doigts
   function boot() {
     initLenis();
     initCursor();
@@ -595,7 +610,7 @@
     runLoader(boot);
   });
 
-  // Refresh ScrollTrigger après le chargement complet (fonts, images)
+  // on recalcule ScrollTrigger qd tout est chargé (polices, images... les retardataires quoi)
   window.addEventListener("load", () => {
     if (hasGSAP) ScrollTrigger.refresh();
   });
