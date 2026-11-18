@@ -465,6 +465,10 @@ html.lenis, html.lenis body { height: auto; }
 .footer__cols a, .footer__cols p { display: block; color: var(--muted); font-size: 0.95rem; margin-bottom: 0.5rem; transition: color .3s; }
 .footer__cols a:hover { color: var(--volt); }
 .footer__bottom { max-width: var(--maxw); margin: 0 auto; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding-top: 2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+/* la signature du studio, avec son petit E qui va bien */
+.footer__studio { display: inline-flex; align-items: center; gap: 0.4rem; vertical-align: middle; color: var(--text); transition: color .3s; }
+.footer__studio img { width: 18px; height: 18px; border-radius: 4px; }
+.footer__studio:hover { color: var(--volt); }
 
 /* ============================================================
    BURGER + MENU MOBILE (le burger se mange pas, désolé)
